@@ -34,15 +34,49 @@ public class UploaderThread implements Runnable
 		{
 			ServerSocket sSock = new ServerSocket(port);
 			Socket net = sSock.accept();
+			
 			if (!net.getRemoteSocketAddress().toString().equals(clientIPaddr))
 			{
-				Logs.warning("UploaderThread[uploadData:" + uploadDataRep + "].run(): Client");
+				Logs.warning("UploaderThread[uploadData:" + uploadDataRep + "].run(): Client\'s IP address is unexpected. Disconnecting...");
+				net.close();
+				sSock.close();
 			}
 			
+			byte[] randomData = new byte[1024];
+			for (int i = 0; i < randomData.length; i++)
+				randomData[i] = (byte)(Math.random() * 255);
+			
+			//now upload the random data
+			for (int totalBytes = 0; totalBytes < bytesToUpload; totalBytes += randomData.length)
+			{
+				uploadIter(randomData, net.getOutputStream());
+			}
+			net.close();
+			sSock.close();
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
+		}
+	}
+	
+	//131072 bytes/sec. = 1 Mbps
+	public void uploadIter(byte[] dataArray, OutputStream netOut) throws Exception
+	{
+		int usPerIter = (int)(1000 / (128 * throughputSim * 1000)); //time, in microseconds, it should take per array upload. Example: 1000 / (128 * 10 Mbps) = 800 microsec.
+		String beginTstr = System.nanoTime() + "";
+		int beginT = Integer.parseInt(beginTstr.substring(beginTstr.length() - 6, beginTstr.length())) / 1000; //beginT is in microseconds.
+		
+		netOut.write(dataArray);
+		netOut.flush();
+		
+		String endTstr = System.nanoTime() + "";
+		int endT = Integer.parseInt(endTstr.substring(endTstr.length() - 6, endTstr.length())) / 1000;
+		
+		if (endT - beginT < usPerIter) //if the time to upload the array took shorter than it is supposed to
+		{
+			int delayT = usPerIter - (endT - beginT);
+			Thread.sleep(0, delayT);
 		}
 	}
 	
