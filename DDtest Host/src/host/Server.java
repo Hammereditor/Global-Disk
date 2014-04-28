@@ -1,5 +1,6 @@
 package host;
 
-public class Server {
+public class Server 
+{
 
 }
