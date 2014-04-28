@@ -10,14 +10,21 @@ public class Server implements Runnable
 	public int port;
 	public int pasvRange_start;
 	public int pasvRange_end;
+	public char stripeID; //A-D
+	public int raidNum; //0-5
+	public UptimeScheme uptimeScheme;
 	public String hostID;
 	
-	public Server(int port, int prs, int pre, String hostID, UptimeScheme uptimeScheme)
+	public Server(int port, int prs, int pre, char stripeID, int raidNum, UptimeScheme uptimeScheme)
 	{
 		this.port = port;
 		this.pasvRange_start = prs;
 		this.pasvRange_end = pre;
-		this.hostID = hostID;
+		this.raidNum = raidNum;
+		this.stripeID = stripeID;
+		this.uptimeScheme = uptimeScheme;
+		
+		this.hostID = "stripe " + stripeID + " + mirror " + raidNum;
 	}
 	
 	public void run()
